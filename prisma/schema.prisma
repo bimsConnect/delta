@@ -1,0 +1,102 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      Role     @default(STAFF)
+  position  String?
+  phone     String?
+  linkedin  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  reports   Report[]
+  galleries GalleryImage[]
+}
+
+model Report {
+  id          String       @id @default(cuid())
+  title       String
+  type        ReportType
+  date        DateTime
+  fileUrl     String?
+  fileName    String?
+  fileType    String?
+  publicId    String?      // Cloudinary public ID
+  description String?
+  status      ReportStatus @default(PENDING)
+  comment     String?
+  author      User         @relation(fields: [authorId], references: [id])
+  authorId    String
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Machine {
+  id               String        @id @default(cuid())
+  name             String
+  type             String
+  status           MachineStatus @default(OPERATIONAL)
+  location         String
+  serialNumber     String
+  installationDate DateTime
+  lastMaintenance  DateTime?
+  nextMaintenance  DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model GalleryImage {
+  id          String        @id @default(cuid())
+  title       String
+  description String?
+  imageUrl    String
+  publicId    String        // Cloudinary public ID
+  category    ImageCategory
+  author      User          @relation(fields: [authorId], references: [id])
+  authorId    String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+enum ReportType {
+  DAILY
+  WEEKLY
+  MONTHLY
+}
+
+enum ReportStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum MachineStatus {
+  OPERATIONAL
+  MAINTENANCE
+  OFFLINE
+}
+
+enum ImageCategory {
+  MAINTENANCE
+  TEAM
+  INSTALLATION
+  TRAINING
+}
