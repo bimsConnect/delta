@@ -1,0 +1,11 @@
+{
+    "build": {
+      "allowedPackages": [
+        "@prisma/client",
+        "prisma",
+        "esbuild",
+        "sharp"
+      ]
+    }
+  }
+  
