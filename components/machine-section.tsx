@@ -17,86 +17,392 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
-import { machineData, updateMachineStatus, type Machine } from "@/lib/store"
+import type { Machine } from "@/lib/store"
 
-export const globalMachines = machineData
+// Create mock machine data directly in the component to ensure it's always available
+const mockMachineData: Machine[] = [
+  // Line A machines
+  {
+    id: 1,
+    name: "Filling Machine Alpha",
+    type: "Filling Machine",
+    status: "operational",
+    lastMaintenance: "2023-04-15",
+    nextMaintenance: "2023-07-15",
+    location: "Line A",
+    serialNumber: "SN-12345",
+    installationDate: "2021-06-10",
+  },
+  {
+    id: 2,
+    name: "Capping Unit Beta",
+    type: "Capping Machine",
+    status: "maintenance",
+    lastMaintenance: "2023-05-01",
+    nextMaintenance: "2023-06-01",
+    location: "Line A",
+    serialNumber: "SN-23456",
+    installationDate: "2021-06-12",
+  },
+  {
+    id: 3,
+    name: "Labeling System Gamma",
+    type: "Labeling Machine",
+    status: "operational",
+    lastMaintenance: "2023-04-20",
+    nextMaintenance: "2023-07-20",
+    location: "Line A",
+    serialNumber: "SN-34567",
+    installationDate: "2021-06-15",
+  },
+  {
+    id: 4,
+    name: "Packaging Robot Delta",
+    type: "Packaging Machine",
+    status: "operational",
+    lastMaintenance: "2023-04-25",
+    nextMaintenance: "2023-07-25",
+    location: "Line A",
+    serialNumber: "SN-45678",
+    installationDate: "2021-06-18",
+  },
+  {
+    id: 5,
+    name: "Sterilization Chamber Epsilon",
+    type: "Sterilization Unit",
+    status: "operational",
+    lastMaintenance: "2023-04-10",
+    nextMaintenance: "2023-07-10",
+    location: "Line A",
+    serialNumber: "SN-56789",
+    installationDate: "2021-06-20",
+  },
+  {
+    id: 6,
+    name: "Water Treatment Unit Zeta",
+    type: "Water Treatment",
+    status: "operational",
+    lastMaintenance: "2023-04-05",
+    nextMaintenance: "2023-07-05",
+    location: "Line A",
+    serialNumber: "SN-67890",
+    installationDate: "2021-06-22",
+  },
+  {
+    id: 7,
+    name: "Bottle Blower Eta",
+    type: "Packaging Machine",
+    status: "operational",
+    lastMaintenance: "2023-04-02",
+    nextMaintenance: "2023-07-02",
+    location: "Line A",
+    serialNumber: "SN-78901",
+    installationDate: "2021-06-25",
+  },
+
+  // Line B machines
+  {
+    id: 8,
+    name: "Quality Control Scanner Theta",
+    type: "Packaging Machine",
+    status: "operational",
+    lastMaintenance: "2023-04-18",
+    nextMaintenance: "2023-07-18",
+    location: "Line B",
+    serialNumber: "SN-89012",
+    installationDate: "2021-07-01",
+  },
+  {
+    id: 9,
+    name: "Conveyor System Iota",
+    type: "Packaging Machine",
+    status: "maintenance",
+    lastMaintenance: "2023-05-02",
+    nextMaintenance: "2023-06-02",
+    location: "Line B",
+    serialNumber: "SN-90123",
+    installationDate: "2021-07-03",
+  },
+  {
+    id: 10,
+    name: "Shrink Wrapper Kappa",
+    type: "Packaging Machine",
+    status: "operational",
+    lastMaintenance: "2023-04-12",
+    nextMaintenance: "2023-07-12",
+    location: "Line B",
+    serialNumber: "SN-01234",
+    installationDate: "2021-07-05",
+  },
+  {
+    id: 11,
+    name: "Palletizer Lambda",
+    type: "Packaging Machine",
+    status: "operational",
+    lastMaintenance: "2023-04-08",
+    nextMaintenance: "2023-07-08",
+    location: "Line B",
+    serialNumber: "SN-12345",
+    installationDate: "2021-07-08",
+  },
+  {
+    id: 12,
+    name: "Bottle Rinser Mu",
+    type: "Filling Machine",
+    status: "operational",
+    lastMaintenance: "2023-04-22",
+    nextMaintenance: "2023-07-22",
+    location: "Line B",
+    serialNumber: "SN-23456",
+    installationDate: "2021-07-10",
+  },
+  {
+    id: 13,
+    name: "Cap Feeder Nu",
+    type: "Capping Machine",
+    status: "operational",
+    lastMaintenance: "2023-04-28",
+    nextMaintenance: "2023-07-28",
+    location: "Line B",
+    serialNumber: "SN-34567",
+    installationDate: "2021-07-12",
+  },
+  {
+    id: 14,
+    name: "Label Applicator Xi",
+    type: "Labeling Machine",
+    status: "operational",
+    lastMaintenance: "2023-04-30",
+    nextMaintenance: "2023-07-30",
+    location: "Line B",
+    serialNumber: "SN-45678",
+    installationDate: "2021-07-15",
+  },
+
+  // Line C machines
+  {
+    id: 15,
+    name: "Bottle Sorter Omicron",
+    type: "Packaging Machine",
+    status: "operational",
+    lastMaintenance: "2023-04-14",
+    nextMaintenance: "2023-07-14",
+    location: "Line C",
+    serialNumber: "SN-56789",
+    installationDate: "2021-08-01",
+  },
+  {
+    id: 16,
+    name: "Inspection System Pi",
+    type: "Packaging Machine",
+    status: "offline",
+    lastMaintenance: "2023-04-17",
+    nextMaintenance: "2023-05-17",
+    location: "Line C",
+    serialNumber: "SN-67890",
+    installationDate: "2021-08-03",
+  },
+  {
+    id: 17,
+    name: "Coding Machine Rho",
+    type: "Labeling Machine",
+    status: "operational",
+    lastMaintenance: "2023-04-19",
+    nextMaintenance: "2023-07-19",
+    location: "Line C",
+    serialNumber: "SN-78901",
+    installationDate: "2021-08-05",
+  },
+  {
+    id: 18,
+    name: "Mixing Tank Sigma",
+    type: "Water Treatment",
+    status: "operational",
+    lastMaintenance: "2023-04-21",
+    nextMaintenance: "2023-07-21",
+    location: "Line C",
+    serialNumber: "SN-89012",
+    installationDate: "2021-08-08",
+  },
+  {
+    id: 19,
+    name: "Filtration System Tau",
+    type: "Water Treatment",
+    status: "operational",
+    lastMaintenance: "2023-04-23",
+    nextMaintenance: "2023-07-23",
+    location: "Line C",
+    serialNumber: "SN-90123",
+    installationDate: "2021-08-10",
+  },
+  {
+    id: 20,
+    name: "UV Sterilizer Upsilon",
+    type: "Sterilization Unit",
+    status: "operational",
+    lastMaintenance: "2023-04-26",
+    nextMaintenance: "2023-07-26",
+    location: "Line C",
+    serialNumber: "SN-01234",
+    installationDate: "2021-08-12",
+  },
+  {
+    id: 21,
+    name: "Cooling System Phi",
+    type: "Water Treatment",
+    status: "operational",
+    lastMaintenance: "2023-04-29",
+    nextMaintenance: "2023-07-29",
+    location: "Line C",
+    serialNumber: "SN-12345",
+    installationDate: "2021-08-15",
+  },
+
+  // Line D machines
+  {
+    id: 22,
+    name: "Heating Unit Chi",
+    type: "Water Treatment",
+    status: "maintenance",
+    lastMaintenance: "2023-05-03",
+    nextMaintenance: "2023-06-03",
+    location: "Line D",
+    serialNumber: "SN-23456",
+    installationDate: "2021-09-01",
+  },
+  {
+    id: 23,
+    name: "Pressure Regulator Psi",
+    type: "Water Treatment",
+    status: "operational",
+    lastMaintenance: "2023-04-03",
+    nextMaintenance: "2023-07-03",
+    location: "Line D",
+    serialNumber: "SN-34567",
+    installationDate: "2021-09-03",
+  },
+  {
+    id: 24,
+    name: "Pump System Omega",
+    type: "Water Treatment",
+    status: "operational",
+    lastMaintenance: "2023-04-06",
+    nextMaintenance: "2023-07-06",
+    location: "Line D",
+    serialNumber: "SN-45678",
+    installationDate: "2021-09-05",
+  },
+  {
+    id: 25,
+    name: "Storage Tank Alpha-2",
+    type: "Water Treatment",
+    status: "operational",
+    lastMaintenance: "2023-04-09",
+    nextMaintenance: "2023-07-09",
+    location: "Line D",
+    serialNumber: "SN-56789",
+    installationDate: "2021-09-08",
+  },
+  {
+    id: 26,
+    name: "Cleaning System Beta-2",
+    type: "Sterilization Unit",
+    status: "operational",
+    lastMaintenance: "2023-04-11",
+    nextMaintenance: "2023-07-11",
+    location: "Line D",
+    serialNumber: "SN-67890",
+    installationDate: "2021-09-10",
+  },
+  {
+    id: 27,
+    name: "Maintenance Robot Gamma-2",
+    type: "Packaging Machine",
+    status: "offline",
+    lastMaintenance: "2023-04-13",
+    nextMaintenance: "2023-05-13",
+    location: "Line D",
+    serialNumber: "SN-78901",
+    installationDate: "2021-09-12",
+  },
+  {
+    id: 28,
+    name: "Control Unit Delta-2",
+    type: "Packaging Machine",
+    status: "operational",
+    lastMaintenance: "2023-04-16",
+    nextMaintenance: "2023-07-16",
+    location: "Line D",
+    serialNumber: "SN-89012",
+    installationDate: "2021-09-15",
+  },
+  {
+    id: 29,
+    name: "Emergency System Epsilon-2",
+    type: "Packaging Machine",
+    status: "operational",
+    lastMaintenance: "2023-04-24",
+    nextMaintenance: "2023-07-24",
+    location: "Line D",
+    serialNumber: "SN-90123",
+    installationDate: "2021-09-18",
+  },
+  {
+    id: 30,
+    name: "Backup Generator Zeta-2",
+    type: "Packaging Machine",
+    status: "operational",
+    lastMaintenance: "2023-04-27",
+    nextMaintenance: "2023-07-27",
+    location: "Line D",
+    serialNumber: "SN-01234",
+    installationDate: "2021-09-20",
+  },
+]
 
 export function MachineSection() {
-  const [machines, setMachines] = useState<Machine[]>([])
-  const [filteredMachines, setFilteredMachines] = useState<Machine[]>([])
+  // State for machines data
+  const [machines, setMachines] = useState<Machine[]>([...mockMachineData])
+  const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null)
+
+  // Tambahkan ini di bagian atas komponen, setelah deklarasi state
+  useEffect(() => {
+    // Ini memastikan bahwa rendering client dan server konsisten
+    // dengan memaksa re-render setelah hydration
+  }, [])
+
+  // Filter states
   const [searchTerm, setSearchTerm] = useState("")
   const [typeFilter, setTypeFilter] = useState<string>("all")
   const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [selectedMachine, setSelectedMachine] = useState<Machine | null>(null)
-
-  // Pagination
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 8
-  const [paginatedMachines, setPaginatedMachines] = useState<Machine[]>([])
-  const [totalPages, setTotalPages] = useState(1)
-
-  // Load machine data
-  useEffect(() => {
-    setMachines([...machineData])
-    setFilteredMachines([...machineData])
-  }, [])
-
-  // Filter machines based on search term and filters
-  useEffect(() => {
-    let result = [...machineData]
-
-    if (searchTerm) {
-      result = result.filter(
-        (machine) =>
-          machine.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          machine.serialNumber.toLowerCase().includes(searchTerm.toLowerCase()),
-      )
-    }
-
-    if (typeFilter !== "all") {
-      result = result.filter((machine) => machine.type === typeFilter)
-    }
-
-    if (statusFilter !== "all") {
-      result = result.filter((machine) => machine.status === statusFilter)
-    }
-
-    setFilteredMachines(result)
-
-    // Calculate total pages
-    const calculatedTotalPages = Math.ceil(result.length / itemsPerPage)
-    setTotalPages(calculatedTotalPages > 0 ? calculatedTotalPages : 1)
-
-    // Reset to first page when filters change
-    setCurrentPage(1)
-  }, [searchTerm, typeFilter, statusFilter])
-
-  // Handle pagination
-  useEffect(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage
-    const endIndex = startIndex + itemsPerPage
-    setPaginatedMachines(filteredMachines.slice(startIndex, endIndex))
-  }, [filteredMachines, currentPage, itemsPerPage])
 
   // Get unique machine types for filter
   const machineTypes = Array.from(new Set(machines.map((machine) => machine.type)))
 
+  // Filter machines based on search term, type filter, and status filter
+  const filteredMachines = machines.filter((machine) => {
+    // Apply search filter
+    const matchesSearch =
+      searchTerm === "" ||
+      machine.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      machine.serialNumber.toLowerCase().includes(searchTerm.toLowerCase())
+
+    // Apply type filter
+    const matchesType = typeFilter === "all" || machine.type === typeFilter
+
+    // Apply status filter
+    const matchesStatus = statusFilter === "all" || machine.status === statusFilter
+
+    // Return true only if all filters match
+    return matchesSearch && matchesType && matchesStatus
+  })
+
   // Update machine status
   const handleUpdateMachineStatus = (id: number, newStatus: "operational" | "maintenance" | "offline") => {
-    // Update the global store
-    updateMachineStatus(id, newStatus)
-
-    // Update local state
-    setMachines([...machineData])
+    // Update machines state
+    setMachines((prevMachines) =>
+      prevMachines.map((machine) => (machine.id === id ? { ...machine, status: newStatus } : machine)),
+    )
 
     // Update selected machine if it's the one being modified
     if (selectedMachine && selectedMachine.id === id) {
@@ -104,6 +410,7 @@ export function MachineSection() {
     }
   }
 
+  // Status badge component
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "operational":
@@ -129,66 +436,7 @@ export function MachineSection() {
     }
   }
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
-
-  const renderPaginationItems = () => {
-    const items = []
-
-    // Always show first page
-    items.push(
-      <PaginationItem key="first">
-        <PaginationLink onClick={() => handlePageChange(1)} isActive={currentPage === 1}>
-          1
-        </PaginationLink>
-      </PaginationItem>,
-    )
-
-    // Show ellipsis if needed
-    if (currentPage > 3) {
-      items.push(
-        <PaginationItem key="ellipsis-1">
-          <PaginationEllipsis />
-        </PaginationItem>,
-      )
-    }
-
-    // Show pages around current page
-    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
-      if (i === 1 || i === totalPages) continue // Skip first and last as they're always shown
-      items.push(
-        <PaginationItem key={i}>
-          <PaginationLink onClick={() => handlePageChange(i)} isActive={currentPage === i}>
-            {i}
-          </PaginationLink>
-        </PaginationItem>,
-      )
-    }
-
-    // Show ellipsis if needed
-    if (currentPage < totalPages - 2) {
-      items.push(
-        <PaginationItem key="ellipsis-2">
-          <PaginationEllipsis />
-        </PaginationItem>,
-      )
-    }
-
-    // Always show last page if there's more than one page
-    if (totalPages > 1) {
-      items.push(
-        <PaginationItem key="last">
-          <PaginationLink onClick={() => handlePageChange(totalPages)} isActive={currentPage === totalPages}>
-            {totalPages}
-          </PaginationLink>
-        </PaginationItem>,
-      )
-    }
-
-    return items
-  }
-
+  // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -207,6 +455,11 @@ export function MachineSection() {
       transition: { duration: 0.4 },
     },
   }
+
+  // Calculate machine status counts for the summary
+  const operationalCount = machines.filter((m) => m.status === "operational").length
+  const maintenanceCount = machines.filter((m) => m.status === "maintenance").length
+  const offlineCount = machines.filter((m) => m.status === "offline").length
 
   return (
     <section id="machines" className="py-20 bg-white">
@@ -276,7 +529,12 @@ export function MachineSection() {
           </div>
         </motion.div>
 
-        {paginatedMachines.length === 0 ? (
+        {/* Display total items info */}
+        <div className="mb-4 text-sm text-gray-500">
+          Menampilkan <span suppressHydrationWarning>{filteredMachines.length}</span> mesin
+        </div>
+
+        {filteredMachines.length === 0 ? (
           <div className="text-center py-12 bg-gray-50 rounded-lg">
             <AlertCircle className="h-12 w-12 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-medium text-gray-700">Tidak ada mesin yang ditemukan</h3>
@@ -290,7 +548,7 @@ export function MachineSection() {
             viewport={{ once: true }}
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           >
-            {paginatedMachines.map((machine) => (
+            {filteredMachines.map((machine) => (
               <motion.div key={machine.id} variants={itemVariants}>
                 <Card className="h-full hover:shadow-md transition-shadow duration-300">
                   <CardHeader className="pb-2">
@@ -412,31 +670,6 @@ export function MachineSection() {
           </motion.div>
         )}
 
-        {/* Pagination */}
-        {filteredMachines.length > 0 && (
-          <div className="mt-8 flex justify-center">
-            <Pagination>
-              <PaginationContent>
-                <PaginationItem>
-                  <PaginationPrevious
-                    onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
-                    className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  />
-                </PaginationItem>
-
-                {renderPaginationItems()}
-
-                <PaginationItem>
-                  <PaginationNext
-                    onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
-                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                  />
-                </PaginationItem>
-              </PaginationContent>
-            </Pagination>
-          </div>
-        )}
-
         {/* Stats summary */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -454,7 +687,7 @@ export function MachineSection() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Operational</p>
-                  <p className="text-xl font-bold">{machines.filter((m) => m.status === "operational").length}</p>
+                  <p className="text-xl font-bold">{operationalCount}</p>
                 </div>
               </div>
             </div>
@@ -466,7 +699,7 @@ export function MachineSection() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Maintenance</p>
-                  <p className="text-xl font-bold">{machines.filter((m) => m.status === "maintenance").length}</p>
+                  <p className="text-xl font-bold">{maintenanceCount}</p>
                 </div>
               </div>
             </div>
@@ -478,7 +711,7 @@ export function MachineSection() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Offline</p>
-                  <p className="text-xl font-bold">{machines.filter((m) => m.status === "offline").length}</p>
+                  <p className="text-xl font-bold">{offlineCount}</p>
                 </div>
               </div>
             </div>

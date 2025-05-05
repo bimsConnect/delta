@@ -167,6 +167,7 @@ export function ReportSection() {
     }
   }
 
+  // Improved direct download function
   const handleDownload = async (report: Report) => {
     if (!report.fileUrl) {
       toast({
@@ -180,37 +181,40 @@ export function ReportSection() {
     setIsDownloading(report.id)
 
     try {
-      // Get download info from API
-      const response = await fetch(`/api/reports/download/${report.id}`)
+      // Create a hidden iframe to handle the download
+      // This approach allows direct download without page navigation
+      const downloadFrame = document.createElement("iframe")
+      downloadFrame.style.display = "none"
+      document.body.appendChild(downloadFrame)
 
-      if (!response.ok) {
-        throw new Error("Failed to download file")
-      }
+      // Set the iframe source to our download API endpoint
+      downloadFrame.src = `/api/reports/download/${report.id}`
 
-      const data = await response.json()
+      // Show success message after a short delay
+      setTimeout(() => {
+        toast({
+          title: "Berhasil",
+          description: "File sedang diunduh",
+        })
 
-      // Create a temporary link and trigger download
-      const link = document.createElement("a")
-      link.href = data.fileUrl
-      link.target = "_blank"
-      link.download = data.fileName || `${report.title}.pdf`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-
-      toast({
-        title: "Berhasil",
-        description: "File berhasil diunduh",
-      })
+        // Clean up the iframe after download has started
+        setTimeout(() => {
+          document.body.removeChild(downloadFrame)
+        }, 2000)
+      }, 1000)
     } catch (error) {
       console.error("Error downloading file:", error)
       toast({
         title: "Error",
-        description: "Gagal mengunduh file",
+        description: error instanceof Error ? error.message : "Gagal mengunduh file",
         variant: "destructive",
       })
     } finally {
-      setIsDownloading(null)
+      // Set a timeout to reset the downloading state
+      // This gives users visual feedback that something happened
+      setTimeout(() => {
+        setIsDownloading(null)
+      }, 2000)
     }
   }
 

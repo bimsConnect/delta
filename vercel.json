@@ -1,11 +1,6 @@
 {
-    "build": {
-      "allowedPackages": [
-        "@prisma/client",
-        "prisma",
-        "esbuild",
-        "sharp"
-      ]
-    }
+    "buildCommand": "prisma generate && next build",
+    "installCommand": "pnpm install",
+    "framework": "nextjs",
+    "outputDirectory": ".next"
   }
-  

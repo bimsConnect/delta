@@ -70,7 +70,12 @@ export function Navbar() {
                 </Link>
               </motion.div>
             ))}
-            <Button asChild variant="outline">
+            <Button
+              asChild
+              variant="outline"
+              onClick={() => setIsMenuOpen(false)}
+              className="bg-blue-500 hover:bg-blue-600 text-white border-none"
+            >
               <Link href="/login">Login</Link>
             </Button>
           </div>
@@ -124,7 +129,12 @@ export function Navbar() {
                     </Link>
                   </motion.div>
                 ))}
-                <Button asChild variant="outline" onClick={() => setIsMenuOpen(false)}>
+                <Button
+                  asChild
+                  variant="outline"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="bg-blue-500 hover:bg-blue-600 text-white border-none"
+                >
                   <Link href="/login">Login</Link>
                 </Button>
               </div>

@@ -4,7 +4,20 @@ import type React from "react"
 
 import { useState, useEffect, useRef } from "react"
 import { motion } from "framer-motion"
-import { Calendar, Check, Clock, Download, FileText, Filter, Search, X, Upload, Loader2, FileUp } from "lucide-react"
+import {
+  Calendar,
+  Check,
+  Clock,
+  Download,
+  FileText,
+  Filter,
+  Search,
+  X,
+  Upload,
+  Loader2,
+  FileUp,
+  Trash2,
+} from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -67,6 +80,10 @@ export default function ReportsPage() {
     description: "",
     file: null as File | null,
   })
+
+  // Add a new state for the delete confirmation dialog
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [reportToDelete, setReportToDelete] = useState<Report | null>(null)
 
   // Fetch reports
   useEffect(() => {
@@ -234,7 +251,7 @@ export default function ReportsPage() {
     }
   }
 
-  // Handle report download
+  // Improved direct download function
   const handleDownload = async (report: Report) => {
     if (!report.fileUrl) {
       toast({
@@ -248,37 +265,82 @@ export default function ReportsPage() {
     setIsDownloading(report.id)
 
     try {
-      // Get download info from API
-      const response = await fetch(`/api/reports/download/${report.id}`)
+      // Create a hidden iframe to handle the download
+      // This approach allows direct download without page navigation
+      const downloadFrame = document.createElement("iframe")
+      downloadFrame.style.display = "none"
+      document.body.appendChild(downloadFrame)
 
-      if (!response.ok) {
-        throw new Error("Failed to download file")
-      }
+      // Set the iframe source to our download API endpoint
+      downloadFrame.src = `/api/reports/download/${report.id}`
 
-      const data = await response.json()
+      // Show success message after a short delay
+      setTimeout(() => {
+        toast({
+          title: "Berhasil",
+          description: "File sedang diunduh",
+        })
 
-      // Create a temporary link and trigger download
-      const link = document.createElement("a")
-      link.href = data.fileUrl
-      link.target = "_blank"
-      link.download = data.fileName || `${report.title}.pdf`
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-
-      toast({
-        title: "Berhasil",
-        description: "File berhasil diunduh",
-      })
+        // Clean up the iframe after download has started
+        setTimeout(() => {
+          document.body.removeChild(downloadFrame)
+        }, 2000)
+      }, 1000)
     } catch (error) {
       console.error("Error downloading file:", error)
       toast({
         title: "Error",
-        description: "Gagal mengunduh file",
+        description: error instanceof Error ? error.message : "Gagal mengunduh file",
         variant: "destructive",
       })
     } finally {
-      setIsDownloading(null)
+      // Set a timeout to reset the downloading state
+      // This gives users visual feedback that something happened
+      setTimeout(() => {
+        setIsDownloading(null)
+      }, 2000)
+    }
+  }
+
+  // Add this new function after handleDownload
+  const handleDeleteReport = async () => {
+    if (!reportToDelete) return
+
+    setIsProcessing(true)
+
+    try {
+      const response = await fetch(`/api/reports/${reportToDelete.id}`, {
+        method: "DELETE",
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to delete report")
+      }
+
+      // Refresh reports list
+      const updatedResponse = await fetch(`/api/reports?type=${typeFilter}&status=${statusFilter}`)
+      if (updatedResponse.ok) {
+        const updatedData = await updatedResponse.json()
+        setReports(updatedData)
+      }
+
+      toast({
+        title: "Laporan dihapus",
+        description: `Laporan "${reportToDelete.title}" telah berhasil dihapus`,
+      })
+
+      setIsDeleteDialogOpen(false)
+      setReportToDelete(null)
+    } catch (error) {
+      console.error("Error deleting report:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Gagal menghapus laporan",
+        variant: "destructive",
+      })
+    } finally {
+      setIsProcessing(false)
     }
   }
 
@@ -558,6 +620,10 @@ export default function ReportsPage() {
                       setIsReviewDialogOpen(true)
                     }}
                     onDownloadClick={handleDownload}
+                    onDeleteClick={(report) => {
+                      setReportToDelete(report)
+                      setIsDeleteDialogOpen(true)
+                    }}
                     isDownloading={isDownloading}
                     isLoading={isLoading}
                   />
@@ -574,6 +640,10 @@ export default function ReportsPage() {
                       setIsReviewDialogOpen(true)
                     }}
                     onDownloadClick={handleDownload}
+                    onDeleteClick={(report) => {
+                      setReportToDelete(report)
+                      setIsDeleteDialogOpen(true)
+                    }}
                     isDownloading={isDownloading}
                     isLoading={isLoading}
                   />
@@ -590,6 +660,10 @@ export default function ReportsPage() {
                       setIsReviewDialogOpen(true)
                     }}
                     onDownloadClick={handleDownload}
+                    onDeleteClick={(report) => {
+                      setReportToDelete(report)
+                      setIsDeleteDialogOpen(true)
+                    }}
                     isDownloading={isDownloading}
                     isLoading={isLoading}
                   />
@@ -606,6 +680,10 @@ export default function ReportsPage() {
                       setIsReviewDialogOpen(true)
                     }}
                     onDownloadClick={handleDownload}
+                    onDeleteClick={(report) => {
+                      setReportToDelete(report)
+                      setIsDeleteDialogOpen(true)
+                    }}
                     isDownloading={isDownloading}
                     isLoading={isLoading}
                   />
@@ -729,6 +807,53 @@ export default function ReportsPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Konfirmasi Hapus</DialogTitle>
+            <DialogDescription>
+              Apakah Anda yakin ingin menghapus laporan ini? Tindakan ini tidak dapat dibatalkan.
+            </DialogDescription>
+          </DialogHeader>
+
+          {reportToDelete && (
+            <div className="py-4">
+              <p className="font-medium">{reportToDelete.title}</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {getReportTypeLabel(reportToDelete.type)} • {formatDate(reportToDelete.date)}
+              </p>
+            </div>
+          )}
+
+          <DialogFooter className="flex flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={isProcessing}
+              className="sm:w-auto w-full"
+            >
+              Batal
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteReport}
+              disabled={isProcessing}
+              className="sm:w-auto w-full"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Menghapus...
+                </>
+              ) : (
+                "Hapus Laporan"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
@@ -741,6 +866,7 @@ function ReportTable({
   formatDate,
   onReviewClick,
   onDownloadClick,
+  onDeleteClick,
   isDownloading,
   isLoading,
 }: {
@@ -750,6 +876,7 @@ function ReportTable({
   formatDate: (date: string) => string
   onReviewClick: (report: any) => void
   onDownloadClick: (report: any) => void
+  onDeleteClick: (report: any) => void
   isDownloading: string | null
   isLoading: boolean
 }) {
@@ -816,6 +943,15 @@ function ReportTable({
                     <Button variant="outline" size="sm" onClick={() => onReviewClick(report)}>
                       <FileText className="h-4 w-4 mr-1" />
                       Tinjau
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
+                      onClick={() => onDeleteClick(report)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span className="sr-only">Delete</span>
                     </Button>
                   </div>
                 </TableCell>

@@ -15,13 +15,21 @@ export function Hero() {
 
   return (
     <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
+      {/* Background Layer */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-r from-sky-100 to-white opacity-90" />
-        <div className="absolute inset-0 bg-[url('/placeholder.svg?height=1080&width=1920')] bg-cover bg-center opacity-20" />
+        {/* Layer gradasi biru muda */}
+        <div className="absolute inset-0 bg-gradient-to-r from-sky-100 to-white opacity-60" />
+
+        {/* Gambar background */}
+        <div className="absolute inset-0 bg-[url('/images/background.webp?height=1080&width=1920')] bg-cover bg-center opacity-70" />
+
+        {/* Overlay tambahan untuk kontras */}
+        <div className="absolute inset-0 bg-black bg-opacity-10 backdrop-brightness-105 backdrop-contrast-105" />
       </div>
 
       <div className="container mx-auto px-4 z-10 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Konten Kiri */}
           <motion.div
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
@@ -74,6 +82,7 @@ export function Hero() {
             </motion.div>
           </motion.div>
 
+          {/* Gambar Hero */}
           <motion.div
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -81,7 +90,7 @@ export function Hero() {
             className="relative h-[400px] lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl"
           >
             <Image
-              src="/placeholder.svg?height=800&width=600"
+              src="/images/background1.webp?height=800&width=600"
               alt="Divisi Mekanik PT. Delta Rezeki Abadi"
               fill
               className="object-cover"
@@ -90,6 +99,7 @@ export function Hero() {
           </motion.div>
         </div>
 
+        {/* Chevron Scroll */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
